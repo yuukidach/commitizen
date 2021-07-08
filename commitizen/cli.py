@@ -184,6 +184,12 @@ data = {
                         ),
                     },
                     {
+                        "name": "rev_range",
+                        "type": str,
+                        "nargs": "?",
+                        "help": "generates changelog for the given version range",
+                    },
+                    {
                         "name": "--start-rev",
                         "default": None,
                         "help": (

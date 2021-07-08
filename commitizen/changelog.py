@@ -29,7 +29,7 @@ import os
 import re
 from collections import OrderedDict, defaultdict
 from datetime import date
-from typing import Callable, Dict, Iterable, List, Optional
+from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 from jinja2 import Environment, PackageLoader
 
@@ -281,3 +281,48 @@ def incremental_build(new_content: str, lines: List, metadata: Dict) -> List:
     if not isinstance(latest_version_position, int):
         output_lines.append(new_content)
     return output_lines
+
+
+def get_tag_range(tags: List[GitTag], start: str, end: Optional[str]) -> List[GitTag]:
+    accumulator = []
+    keep = False
+    if not end:
+        end = start
+    for index, tag in enumerate(tags):
+        if tag.name == start:
+            keep = True
+        if keep:
+            accumulator.append(tag)
+        if tag.name == end:
+            keep = False
+            try:
+                accumulator.append(tags[index + 1])
+            except IndexError:
+                pass
+            break
+    return accumulator
+
+
+def get_star_and_end_rev(
+    tags: List[GitTag], version: str, tag_format: str, create_tag: Callable
+) -> Tuple[Optional[str], Optional[str]]:
+    start: Optional[str] = None
+    end: Optional[str] = None
+
+    try:
+        start, end = version.split("..")
+    except ValueError:
+        end = version
+
+    end_tag = create_tag(end, tag_format=tag_format)
+
+    start_tag = None
+    if start:
+        start_tag = create_tag(start, tag_format=tag_format)
+
+    tags = get_tag_range(tags, start=end_tag, end=start_tag)
+    if len(tags) == 0:
+        return None, None
+    start_rev = tags[-1].name
+    end_rev = end_tag
+    return start_rev, end_rev
