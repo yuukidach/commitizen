@@ -76,8 +76,8 @@ types-PyYAML = "^5.4.3"
 types-termcolor = "^0.1.1"
 
 [tool.poetry.scripts]
-cz = "commitizen.cli:main"
-git-cz = "commitizen.cli:main"
+cz = "commitizen.cli:cli"
+git-cz = "commitizen.cli:cli"
 
 [tool.isort]
 profile = "black"

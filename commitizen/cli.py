@@ -4,6 +4,7 @@ import sys
 from functools import partial
 
 import argcomplete
+import click
 from decli import cli
 
 from commitizen import commands, config
@@ -267,6 +268,112 @@ data = {
 
 original_excepthook = sys.excepthook
 
+@click.group()
+@click.version_option()
+def cli():
+    pass
+
+
+@cli.command('info')
+def show_info():
+    """Show information about this tool
+    """
+    conf = config.read_cfg()
+    commands.Info(conf)()
+
+
+@cli.command('example')
+def show_example():
+    """Show commit example.
+    """
+    conf = config.read_cfg()
+    commands.Example(conf)()
+
+
+@cli.command('schema')
+def show_schema():
+    """Show commit schema.
+    """
+    conf = config.read_cfg()
+    commands.Schema(conf)()
+
+
+@cli.command('ls')
+def list_available_configs():
+    """List available commitizens.
+    """
+    conf = config.read_cfg()
+    commands.ListCz(conf)()
+
+
+@cli.command('init')
+def init():
+    """Init commitizen configuration
+    """
+    conf = config.read_cfg()
+    commands.Init(conf)()
+
+
+@cli.command()
+@click.option('--retry', is_flag=True, help='Retry last commit.')
+@click.option('--dry-run', is_flag=True, help='Show output to stdout, no '
+              'modifications and real actions')
+@click.option('-s', '--signoff', is_flag=True, help='Sign off the commit.')
+def commit(retry, dry_run, signoff):
+    """Create a new commit.
+    """
+    conf = config.read_cfg()
+    args = {'retry': retry, 'dry_run': dry_run, 'signoff': signoff}
+    commands.Commit(conf, args)()
+
+
+@cli.command('bump')
+@click.option('--dry-run', is_flag=True, help='Show output to stdout, no '
+              'modifications and real actions')
+@click.option('--files-only', is_flag=True, help='Bump version in the files '
+              'from the config.')
+@click.option('--local-version', is_flag=True, help='Bump only the local '
+              'version portion')
+@click.option('-ch', '--changelog', is_flag=True, help='Generate changelog '
+              'for the newest version.')
+def bump():
+    """Bump semantic version based on the git log.
+    """
+    pass
+
+
+
+@cli.command('changelog')
+@click.option('--dry-run', is_flag=True, help='Show output to stdout, no '
+              'modifications and real actions.')
+@click.option('--filename', help='Filename of the changelog')
+@click.option('--unreleased-version', help='Set the value for the new version '
+              '(use the tag value), instead of using unreleased.')
+@click.option('-i','--inc', is_flag=True, help='Generate changelog from the '
+              'last created version, useful if the changelog has been '
+              'manually modified.')
+@click.option('--start-rev', help='Start rev of the changelog. If not set, it '
+              'will generate changelog from the start.')
+def generate_changelog():
+    """Generate changelog in current working directory.
+
+    This operation will overwrite the existing one.
+    """
+    pass
+
+
+@cli.command()
+@click.option('--commit-msg-file', help='Ask for the name of the temporal '
+              'file that contains the commit messages. Using it in a git hook '
+              'script: MSG_FILE=$1')
+@click.option('--rev-range', help='A range of git rev to check. e.g, '
+              'master..HEAD')
+@click.option('-m', '--message', help='Commit message to be checked.')
+def check():
+    """Validate if a commit message matches the convention.
+    """
+    pass
+
 
 def commitizen_excepthook(type, value, tracekback, debug=False):
     if isinstance(value, CommitizenException):
@@ -318,4 +425,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    cli()
