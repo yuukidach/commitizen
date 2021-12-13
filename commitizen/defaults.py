@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import Any, Dict, List
 
-name: str = "cz_conventional_commits"
+name: str = "default_style"
 config_files: List[str] = [
     "pyproject.toml",
     ".cz.toml",

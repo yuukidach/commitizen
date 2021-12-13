@@ -278,7 +278,7 @@ def cli():
 def show_info():
     """Show information about this tool
     """
-    conf = config.read_cfg()
+    conf = config.ConfigLoader()()
     commands.Info(conf)()
 
 
@@ -286,7 +286,7 @@ def show_info():
 def show_example():
     """Show commit example.
     """
-    conf = config.read_cfg()
+    conf = config.ConfigLoader()()
     commands.Example(conf)()
 
 
@@ -294,7 +294,7 @@ def show_example():
 def show_schema():
     """Show commit schema.
     """
-    conf = config.read_cfg()
+    conf = config.ConfigLoader()()
     commands.Schema(conf)()
 
 
@@ -302,7 +302,7 @@ def show_schema():
 def list_available_configs():
     """List available commitizens.
     """
-    conf = config.read_cfg()
+    conf = config.ConfigLoader()()
     commands.ListCz(conf)()
 
 
@@ -310,7 +310,7 @@ def list_available_configs():
 def init():
     """Init commitizen configuration
     """
-    conf = config.read_cfg()
+    conf = config.ConfigLoader()()
     commands.Init(conf)()
 
 
@@ -322,7 +322,7 @@ def init():
 def commit(retry, dry_run, signoff):
     """Create a new commit.
     """
-    conf = config.read_cfg()
+    conf = config.ConfigLoader()()
     args = {'retry': retry, 'dry_run': dry_run, 'signoff': signoff}
     commands.Commit(conf, args)()
 
@@ -340,7 +340,6 @@ def bump():
     """Bump semantic version based on the git log.
     """
     pass
-
 
 
 @cli.command('changelog')
@@ -391,39 +390,38 @@ commitizen_debug_excepthook = partial(commitizen_excepthook, debug=True)
 sys.excepthook = commitizen_excepthook
 
 
-def main():
-    conf = config.read_cfg()
-    parser = cli(data)
+# def main():
+    # conf = config.read_cfg()
+    # parser = cli(data)
 
-    argcomplete.autocomplete(parser)
-    # Show help if no arg provided
-    if len(sys.argv) == 1:
-        parser.print_help(sys.stderr)
-        raise ExpectedExit()
+    # argcomplete.autocomplete(parser)
+    # # Show help if no arg provided
+    # if len(sys.argv) == 1:
+    #     parser.print_help(sys.stderr)
+    #     raise ExpectedExit()
 
-    # This is for the command required constraint in 2.0
-    try:
-        args = parser.parse_args()
-    except (TypeError, SystemExit) as e:
-        # https://github.com/commitizen-tools/commitizen/issues/429
-        # argparse raises TypeError when non exist command is provided on Python < 3.9
-        # but raise SystemExit with exit code == 2 on Python 3.9
-        if isinstance(e, TypeError) or (isinstance(e, SystemExit) and e.code == 2):
-            raise NoCommandFoundError()
-        raise e
+    # # This is for the command required constraint in 2.0
+    # try:
+    #     args = parser.parse_args()
+    # except (TypeError, SystemExit) as e:
+    #     # https://github.com/commitizen-tools/commitizen/issues/429
+    #     # argparse raises TypeError when non exist command is provided on Python < 3.9
+    #     # but raise SystemExit with exit code == 2 on Python 3.9
+    #     if isinstance(e, TypeError) or (isinstance(e, SystemExit) and e.code == 2):
+    #         raise NoCommandFoundError()
+    #     raise e
 
-    if args.name:
-        conf.update({"name": args.name})
-    elif not args.name and not conf.path:
-        conf.update({"name": "cz_conventional_commits"})
+    # if args.name:
+    #     conf.update({"name": args.name})
+    # elif not args.name and not conf.path:
+    #     conf.update({"name": "cz_conventional_commits"})
 
-    if args.debug:
-        logging.getLogger("commitizen").setLevel(logging.DEBUG)
-        sys.excepthook = commitizen_debug_excepthook
+    # if args.debug:
+    #     logging.getLogger("commitizen").setLevel(logging.DEBUG)
+    #     sys.excepthook = commitizen_debug_excepthook
 
-    args.func(conf, vars(args))()
+    # args.func(conf, vars(args))()
 
 
 if __name__ == "__main__":
-    # main()
     cli()
