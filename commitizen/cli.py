@@ -270,47 +270,50 @@ original_excepthook = sys.excepthook
 
 @click.group()
 @click.version_option()
-def cli():
-    pass
+@click.pass_context
+def cli(ctx):
+    config_loader = config.ConfigLoader()
+    conf = config_loader.load_config()
+    ctx.obj = conf
 
 
 @cli.command('info')
-def show_info():
+@click.pass_obj
+def show_info(conf):
     """Show information about this tool
     """
-    conf = config.ConfigLoader()()
     commands.Info(conf)()
 
 
 @cli.command('example')
-def show_example():
+@click.pass_obj
+def show_example(conf):
     """Show commit example.
     """
-    conf = config.ConfigLoader()()
     commands.Example(conf)()
 
 
 @cli.command('schema')
-def show_schema():
+@click.pass_obj
+def show_schema(conf):
     """Show commit schema.
     """
-    conf = config.ConfigLoader()()
     commands.Schema(conf)()
 
 
 @cli.command('ls')
-def list_available_configs():
+@click.pass_obj
+def list_available_configs(conf):
     """List available commitizens.
     """
-    conf = config.ConfigLoader()()
     commands.ListCz(conf)()
 
 
 @cli.command('init')
-def init():
+@click.pass_obj
+def init(conf):
     """Init commitizen configuration
     """
-    conf = config.ConfigLoader()()
     commands.Init(conf)()
 
 
@@ -319,10 +322,10 @@ def init():
 @click.option('--dry-run', is_flag=True, help='Show output to stdout, no '
               'modifications and real actions')
 @click.option('-s', '--signoff', is_flag=True, help='Sign off the commit.')
-def commit(retry, dry_run, signoff):
+@click.pass_obj
+def commit(conf, retry, dry_run, signoff):
     """Create a new commit.
     """
-    conf = config.ConfigLoader()()
     args = {'retry': retry, 'dry_run': dry_run, 'signoff': signoff}
     commands.Commit(conf, args)()
 
