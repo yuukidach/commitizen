@@ -60,25 +60,31 @@ class Commit:
             raise NoAnswersError()
         return cz.message(answers)
 
+    def create_commit_backup(self, commit_message: str):
+        with open(self.temp_file, 'w') as f:
+            f.write(commit_message)
+
+    def _deal_with_commit_error(self, error: str):
+        out.error(error)
+        self.create_commit_backup()
+        raise CommitError()
+
     def __call__(self):
         dry_run: bool = self.arguments.get("dry_run")
+        retry: bool = self.arguments.get("retry")
+        signoff: bool = self.arguments.get("signoff")
 
         if git.is_staging_clean() and not dry_run:
             raise NothingToCommitError("No files added to staging!")
-
-        retry: bool = self.arguments.get("retry")
 
         if retry:
             m = self.read_backup_message()
         else:
             m = self.prompt_commit_questions()
-
         out.info(f"\n{m}\n")
 
         if dry_run:
             raise DryRunExit()
-
-        signoff: bool = self.arguments.get("signoff")
 
         if signoff:
             c = git.commit(m, "-s")
@@ -86,13 +92,7 @@ class Commit:
             c = git.commit(m)
 
         if c.return_code != 0:
-            out.error(c.err)
-
-            # Create commit backup
-            with open(self.temp_file, "w") as f:
-                f.write(m)
-
-            raise CommitError()
+            self._deal_with_commit_error(c.err)
 
         if "nothing added" in c.out or "no changes added to commit" in c.out:
             out.error(c.out)
